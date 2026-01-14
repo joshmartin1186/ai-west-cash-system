@@ -1,48 +1,79 @@
-# AI West - Cash v5 System
+# AI West - Cash System v6
 
-**Streamlined Two-Claude Development System for Production Applications**
+**Streamlined Two-Claude Development System with Supabase-First Architecture**
 
-Cash v5 is AI West's proprietary system for building production applications in 2-3 days. This version eliminates the Claude Project middleman for a direct Cash → Claude Code workflow.
+Cash v6 is AI West's proprietary system for building production applications in 2-3 days. This version adds Supabase-first workflow where the database is created and schema applied before any code work begins.
 
 ---
 
 ## System Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                      CASH (Discovery)                        │
-│                                                              │
-│   Analyzes requirements → Creates GitHub repo + Local folder │
-│   Generates Claude Code starter prompt                       │
-│                                                              │
-│                           ↓                                  │
-│   ┌─────────────────────────────────────────────────────┐   │
-│   │                    OUTPUTS                           │   │
-│   │  1. GitHub Repo (14 files)                          │   │
-│   │  2. Local Project Folder ~/projects/[name]/         │   │
-│   │  3. Claude Code Starter Prompt                      │   │
-│   └─────────────────────────────────────────────────────┘   │
-│                           ↓                                  │
-│              ┌───────────────────────┐                       │
-│              │     Claude Code       │                       │
-│              │      (Builder)        │                       │
-│              │                       │                       │
-│              │ - Uses local clone    │                       │
-│              │ - Builds code         │                       │
-│              │ - Commits every 2-3   │                       │
-│              │ - Pushes immediately  │                       │
-│              │ - Deploys to Vercel   │                       │
-│              └───────────────────────┘                       │
-│                           ↓                                  │
-│                    PRODUCTION APP                            │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                      CASH WORKFLOW (v6)                          │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  Step 1: RETRIEVE REQUIREMENTS                                   │
+│          └─ Fireflies transcript / RFP / Direct input           │
+│                           ↓                                      │
+│  Step 2: DETERMINE BUSINESS CONTEXT                              │
+│          └─ Demographic, pricing, brains, productization        │
+│                           ↓                                      │
+│  Step 3: CREATE SUPABASE PROJECT  ◄── NEW IN v6                 │
+│          └─ supabase:create_project                              │
+│          └─ Capture URL, anon key, service role key             │
+│                           ↓                                      │
+│  Step 4: APPLY DATABASE SCHEMA                                   │
+│          └─ supabase:apply_migration                             │
+│          └─ Verify tables created                                │
+│                           ↓                                      │
+│  Step 5: GENERATE 13 FILES                                       │
+│          └─ Embed Supabase credentials in relevant files        │
+│                           ↓                                      │
+│  Step 6: CREATE GITHUB REPOSITORY                                │
+│          └─ github:create_repository                             │
+│                           ↓                                      │
+│  Step 7: PUSH ALL FILES TO GITHUB                                │
+│          └─ github:push_files (13 files)                        │
+│                           ↓                                      │
+│  Step 8: CREATE LOCAL PROJECT FOLDER                             │
+│          └─ Desktop Commander:create_directory                   │
+│                           ↓                                      │
+│  Step 9: CLONE REPO TO LOCAL                                     │
+│          └─ Desktop Commander:start_process (git clone)         │
+│                           ↓                                      │
+│  Step 10: DELIVER STARTER PROMPT TO JOSH                         │
+│           └─ Complete prompt with all credentials               │
+│                                                                  │
+│  ════════════════════════════════════════════════════════════   │
+│                      CASH JOB COMPLETE                           │
+│  ════════════════════════════════════════════════════════════   │
+│                           ↓                                      │
+│  JOSH: Paste starter prompt into Claude Code                     │
+│                           ↓                                      │
+│  CLAUDE CODE: Build → Commit → Deploy → Handoff                 │
+│                           ↓                                      │
+│                    PRODUCTION APP LIVE                           │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 **Two Coordinated Agents:**
-1. **Cash (Discovery)** - Analyzes requirements, creates GitHub repo + local folder, generates starter prompt
-2. **Claude Code (Builder)** - Builds, commits, deploys - the only builder
+1. **Cash (Discovery)** - Analyzes requirements, creates Supabase + GitHub + local folder, generates starter prompt
+2. **Claude Code (Builder)** - Builds, commits, deploys, handles client handoff
 
 **Timeline:** 2-3 days from requirements to production (5-7 deploy cycles)
+
+---
+
+## Key Difference in v6: Supabase-First
+
+Cash now creates the Supabase project and applies the database schema BEFORE creating the GitHub repo. This means:
+
+- ✅ Database is ready when Claude Code starts
+- ✅ All credentials are captured and embedded in starter prompt
+- ✅ No manual Supabase setup required
+- ✅ Schema is version-controlled via migrations
 
 ---
 
@@ -56,7 +87,7 @@ Cash generates 13 files for every project:
 |------|---------||
 | PROJECT_OVERVIEW.md | Client info, problem/solution, business model, timeline |
 | TECHNICAL_ARCHITECTURE.md | Tech stack, Brain integration, multi-tenant design |
-| DATABASE_SCHEMA.md | Complete SQL for all tables including Brain-specific |
+| DATABASE_SCHEMA.md | Complete SQL (also applied to Supabase) |
 | API_INTEGRATIONS.md | External services, Stripe setup, OAuth config |
 | UI_SPECIFICATIONS.md | Page layouts, component library, user flows |
 | BUILD_PHASES.md | Development phases with atomic tasks |
@@ -77,20 +108,21 @@ Cash generates 13 files for every project:
 
 ## Quick Start
 
-### Phase 1: Discovery (Cash)
+### Phase 1: Discovery & Setup (Cash)
 
 1. **Trigger:** "Pull my conversation with [client] from Fireflies and create a project"
 2. **Cash:** Retrieves transcript, extracts requirements
-3. **Cash:** Generates all 13 files
-4. **Cash:** Creates GitHub repository and pushes files
-5. **Cash:** Creates local project folder using Desktop Commander
-6. **Cash:** Generates Claude Code starter prompt
+3. **Cash:** Creates Supabase project and applies schema
+4. **Cash:** Generates all 13 files with Supabase credentials
+5. **Cash:** Creates GitHub repo and pushes files
+6. **Cash:** Creates local folder and clones repo
+7. **Cash:** Delivers starter prompt with all credentials
 
 ### Phase 2: Building (Josh + Claude Code)
 
 1. **Josh:** Opens Claude Code (Claude Desktop with MCP tools)
-2. **Josh:** Pastes the CODE_STARTER_PROMPT.md content
-3. **Claude Code:** Clones repo, builds, commits, pushes, deploys
+2. **Josh:** Pastes the starter prompt Cash provided
+3. **Claude Code:** Builds, commits, deploys, handles handoff
 4. **Done:** Production app live
 
 ---
@@ -100,29 +132,27 @@ Cash generates 13 files for every project:
 ### Core Documentation (`/docs/`)
 
 📋 **[CASH_OPERATING_INSTRUCTIONS.md](docs/CASH_OPERATING_INSTRUCTIONS.md)**
-- Complete operating instructions for Cash
-- Fireflies transcript retrieval
+- Complete operating instructions for Cash v6
+- Supabase-first workflow
 - 13-file generation process
-- GitHub repo + local folder creation
 
 📖 **[COMPLETE_WORKFLOW.md](docs/COMPLETE_WORKFLOW.md)**
 - End-to-end workflow from requirements to production
-- Streamlined two-Claude coordination
+- Supabase → GitHub → Local → Starter Prompt
 
 📝 **[13_FILE_TEMPLATE.md](docs/13_FILE_TEMPLATE.md)**
 - Templates for all 13 project files
 - Overshared instruction examples
 
 🚀 **[DEPLOYMENT_CHECKLIST.md](docs/DEPLOYMENT_CHECKLIST.md)**
-- Continuous deployment procedures
-- GitHub → Vercel workflow
+- Deployment procedures
+- Client handoff steps
 
 ### Templates (`/templates/`)
 
 🔧 **[CODE_STARTER_PROMPT_TEMPLATE.md](templates/CODE_STARTER_PROMPT_TEMPLATE.md)**
 - Template for Claude Code builder instructions
-- Overshared task definitions
-- Commit/push/deploy protocols
+- Includes Supabase credentials section
 
 💬 **[COMMUNICATION_TEMPLATES.md](templates/COMMUNICATION_TEMPLATES.md)**
 - Client communication templates
@@ -132,31 +162,6 @@ Cash generates 13 files for every project:
 
 🎬 **[VIDEO_DESCRIPTION.md](youtube/VIDEO_DESCRIPTION.md)**
 🖼️ **[THUMBNAIL_PROMPT.md](youtube/THUMBNAIL_PROMPT.md)**
-
----
-
-## Key Principles
-
-### GitHub-First Architecture
-- ✅ Cash creates GitHub repo with all files
-- ✅ Cash creates local folder as exact clone
-- ✅ GitHub is the source of truth
-- ✅ Claude Code works from local clone
-- ✅ Continuous commits keep everything in sync
-
-### Oversharing Instructions
-Every task in EXECUTION_PLAN.md includes:
-- Exact terminal commands
-- Full file contents
-- Expected outputs
-- Testing commands
-- Troubleshooting steps
-
-### No Middleman
-- ❌ No Claude Project orchestrator
-- ✅ Cash hands off directly to Claude Code
-- ✅ One Claude builds everything
-- ✅ Simpler = faster = better
 
 ---
 
@@ -192,9 +197,9 @@ Every task in EXECUTION_PLAN.md includes:
 
 ## Success Metrics
 
-**Speed:** 2-3 days from requirements to production (5-7 deploy cycles)
-**Quality:** Zero security vulnerabilities, optimized performance
-**Simplicity:** Two Claudes, not three. One builder, not two.
+**Speed:** 2-3 days from requirements to production
+**Quality:** Database ready before code starts
+**Simplicity:** Two Claudes, Supabase-first, direct handoff
 **Result:** Professional applications ready for immediate use
 
 ---
@@ -207,6 +212,6 @@ Website: aiwest.co
 ---
 
 **Last Updated:** January 2026
-**Version:** 5.0 (Streamlined Two-Claude Architecture)
+**Version:** 6.0 (Supabase-First Two-Claude Architecture)
 
 © 2025 AI West LLC. All rights reserved.

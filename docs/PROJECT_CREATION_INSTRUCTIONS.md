@@ -1,13 +1,15 @@
-# Project Creation Instructions (v5)
+# Project Creation Instructions (v6)
 
 ## Overview
 
-This document describes how Cash creates a complete project setup for Claude Code.
+This document describes how Cash creates a complete project setup for Claude Code, including Supabase-first database creation.
 
-**v5 Changes:**
-- Removed Claude Project orchestrator
-- Cash now creates both GitHub repo AND local folder
-- Direct handoff to Claude Code
+**v6 Flow:**
+1. Supabase project created FIRST
+2. Database schema applied via migration
+3. GitHub repo created with Supabase credentials embedded
+4. Local folder created and cloned
+5. Starter prompt delivered with all credentials
 
 ---
 
@@ -15,9 +17,10 @@ This document describes how Cash creates a complete project setup for Claude Cod
 
 When triggered, Cash creates:
 
-1. **GitHub Repository** with 13 files
-2. **Local Project Folder** cloned from GitHub
-3. **Claude Code Starter Prompt** ready to paste
+1. **Supabase Project** with schema applied
+2. **GitHub Repository** with 13 files (credentials embedded)
+3. **Local Project Folder** cloned from GitHub
+4. **Claude Code Starter Prompt** with all credentials
 
 ---
 
@@ -25,7 +28,6 @@ When triggered, Cash creates:
 
 ### 1. Retrieve Requirements
 
-**From Fireflies:**
 ```javascript
 fireflies:get_transcripts({
   search: "[client name]",
@@ -34,146 +36,117 @@ fireflies:get_transcripts({
 })
 ```
 
-**From Other Sources:**
-- View uploaded documents
-- Extract from conversation
+### 2. Determine Business Context
 
-### 2. Generate 13 Files
+- Demographic
+- Pricing tier
+- Brain configuration
+- Productization potential
 
-Using templates from `docs/13_FILE_TEMPLATE.md`:
-
-**Specification Files (1-11):**
-1. PROJECT_OVERVIEW.md
-2. TECHNICAL_ARCHITECTURE.md
-3. DATABASE_SCHEMA.md
-4. API_INTEGRATIONS.md
-5. UI_SPECIFICATIONS.md
-6. BUILD_PHASES.md
-7. DEBUGGING_GUIDE.md
-8. CLIENT_REQUIREMENTS.md
-9. PRODUCTIZATION_GUIDE.md
-10. DEPLOYMENT_CHECKLIST.md
-11. AI_WEST_DESIGN_SYSTEM.md
-
-**Execution Files (12-13):**
-12. EXECUTION_PLAN.md
-13. CODE_STARTER_PROMPT.md
-
-### 3. Create GitHub Repository
+### 3. Create Supabase Project
 
 ```javascript
-github:create_repository({
+// Get org
+supabase:list_organizations()
+
+// Confirm cost
+supabase:get_cost({ organization_id: "[org-id]", type: "project" })
+supabase:confirm_cost({ type: "project", amount: [X], recurrence: "monthly" })
+
+// Create
+supabase:create_project({
   name: "[project-name]",
-  description: "AI West Platform - [description]",
-  private: false
+  organization_id: "[org-id]",
+  region: "us-east-1",
+  confirm_cost_id: "[id]"
 })
+
+// Wait for ACTIVE status, then get credentials
+supabase:get_project({ id: "[project-id]" })
+supabase:get_project_url({ project_id: "[project-id]" })
+supabase:get_publishable_keys({ project_id: "[project-id]" })
 ```
 
-### 4. Push All Files
+### 4. Apply Database Schema
 
 ```javascript
-github:push_files({
-  owner: "joshmartin1186",
-  repo: "[project-name]",
-  branch: "main",
-  files: [/* all 13 files */],
-  message: "Initial project documentation"
+supabase:apply_migration({
+  project_id: "[project-id]",
+  name: "initial_schema",
+  query: "[complete SQL]"
+})
+
+supabase:list_tables({
+  project_id: "[project-id]",
+  schemas: ["public"]
 })
 ```
 
-### 5. Create Local Folder
+### 5. Generate 13 Files
+
+With Supabase credentials embedded in:
+- API_INTEGRATIONS.md
+- EXECUTION_PLAN.md
+- CODE_STARTER_PROMPT.md
+
+### 6-7. Create GitHub Repo & Push Files
 
 ```javascript
-Desktop Commander:create_directory({
-  path: "/Users/josh/projects/[project-name]"
-})
+github:create_repository({ name: "[project-name]", private: false })
+github:push_files({ owner: "joshmartin1186", repo: "[project-name]", files: [...] })
 ```
 
-### 6. Clone Repository
+### 8-10. Create Local Folder & Clone
 
 ```javascript
-Desktop Commander:start_process({
-  command: "cd /Users/josh/projects && git clone https://github.com/joshmartin1186/[project-name].git",
-  timeout_ms: 60000
-})
+Desktop Commander:create_directory({ path: "/Users/josh/projects" })
+Desktop Commander:start_process({ command: "cd /Users/josh/projects && git clone ..." })
+Desktop Commander:list_directory({ path: "/Users/josh/projects/[project-name]" })
 ```
 
-### 7. Verify Setup
+### 11. Deliver Starter Prompt
 
-```javascript
-Desktop Commander:list_directory({
-  path: "/Users/josh/projects/[project-name]"
-})
-```
-
-### 8. Report to Josh
-
-```
-Project Ready for Claude Code ✅
-
-**GitHub Repository:** https://github.com/joshmartin1186/[project-name]
-**Local Folder:** ~/projects/[project-name]/
-
-**What We're Building:**
-[Summary]
-
-**Business Model:**
-- Demographic: [X]
-- Configuration: [X] Brain(s)
-- Monthly: $[X]/month
-
----
-
-## Claude Code Starter Prompt
-
-[Generated prompt]
-
----
-
-Ready to build! 🚀
-```
+Complete prompt with:
+- Supabase URL and credentials
+- GitHub repo URL
+- Local folder path
+- Database status (tables ready)
+- First steps
 
 ---
 
 ## File Quality Standards
 
-### EXECUTION_PLAN.md Must Include:
-
-- Every terminal command needed
-- Full file contents for every file created
-- Expected output after each command
-- Verification steps
-- Troubleshooting tips
-- Commit points (every 2-3 tasks)
-
 ### CODE_STARTER_PROMPT.md Must Include:
 
-- Project location (GitHub + local)
-- First steps to verify setup
-- Build protocol (commit every 2-3 tasks)
-- What to do when blocked
-- Reference file list
-- Clear "START NOW" instruction
+- Supabase URL and credentials
+- Database status (✅ ready)
+- List of available tables
+- Environment variables block
+- Clear "database is ready, skip creation" note
+
+### EXECUTION_PLAN.md Must:
+
+- Note that database is already created
+- Skip any "create Supabase project" tasks
+- Skip any "run migrations" tasks
+- Start with Next.js initialization
 
 ---
 
 ## Common Issues
 
-### GitHub Push Fails
+### Supabase Project Not Initializing
 
-Retry once. If still fails:
-"GitHub push hit a snag. Check if repo exists at github.com/joshmartin1186/[project-name]"
+Wait 2-3 minutes, check status:
+```javascript
+supabase:get_project({ id: "[project-id]" })
+```
 
-### Desktop Commander Fails
+### Can't Get Service Role Key
 
-"Couldn't create local folder. Run manually:
-```bash
-cd ~/projects
-git clone https://github.com/joshmartin1186/[project-name].git
-```"
+Ask Josh: "I need the service role key from Supabase Dashboard → Settings → API"
 
-### Fireflies Timeout
+### Migration Fails
 
-"Having trouble with Fireflies. Can you:
-1. Confirm client name
-2. Or paste requirements directly"
+Check SQL syntax, table dependencies, missing extensions.
