@@ -1,19 +1,18 @@
-# Deployment Checklist
+# Deployment Checklist (v6)
 
 ## Overview
 
-With the new parallel Claude architecture, deployment is simpler because:
+With the two-Claude architecture, deployment is handled entirely by Claude Code:
 - Claude Code has been pushing to GitHub continuously
 - All code is already on GitHub (source of truth)
 - Vercel connects directly to GitHub
+- **No Claude Project middleman**
 
 ---
 
 ## Pre-Deployment Verification
 
-### Check GitHub Repository
-
-Claude Project should verify:
+### Claude Code Verifies Before Deploy
 
 ```javascript
 // Check recent commits
@@ -37,7 +36,7 @@ github:list_issues({
 })
 
 // Should be zero open issues
-// If issues exist, they need to be resolved first
+// If issues exist, resolve before deploying
 ```
 
 ### Verify Code Structure
@@ -74,10 +73,10 @@ github:get_file_contents({
 Add these in Vercel dashboard → Settings → Environment Variables:
 
 ```
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL = [from Supabase dashboard → Settings → API]
-NEXT_PUBLIC_SUPABASE_ANON_KEY = [from Supabase dashboard → Settings → API]
-SUPABASE_SERVICE_ROLE_KEY = [from Supabase dashboard → Settings → API]
+# Supabase (Already created by Cash)
+NEXT_PUBLIC_SUPABASE_URL = https://[ref].supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY = [from starter prompt or Supabase dashboard]
+SUPABASE_SERVICE_ROLE_KEY = [from starter prompt or Supabase dashboard]
 
 # Stripe (Production)
 STRIPE_SECRET_KEY = sk_live_xxx [from Stripe dashboard]
@@ -123,18 +122,13 @@ NEXT_PUBLIC_APP_URL = https://{project-name}.vercel.app
 6. Add to Vercel env vars as `STRIPE_WEBHOOK_SECRET`
 7. **Redeploy** (Vercel → Deployments → Redeploy)
 
-#### Update App URL
-
-1. Verify `NEXT_PUBLIC_APP_URL` is set to production URL
-2. If not, update and redeploy
-
 ---
 
 ## Post-Deployment Testing
 
 ### Critical Path Testing
 
-Claude Project guides Josh through testing:
+Claude Code guides Josh through testing:
 
 ```
 ## Production Testing Checklist
@@ -317,7 +311,7 @@ Deployment Complete! ✅
 
 **Monitoring:**
 - Vercel: https://vercel.com/{username}/{project-name}
-- Supabase: https://app.supabase.com/project/{project-id}
+- Supabase: https://supabase.com/dashboard/project/{project-id}
 - Stripe: https://dashboard.stripe.com
 
 **Client Info:**
@@ -328,3 +322,11 @@ Deployment Complete! ✅
 
 Project handoff complete! 🎉
 ```
+
+---
+
+## v6 Summary
+
+**Who handles deployment:** Claude Code (sole builder)
+**Database status:** Already created by Cash (Supabase-first)
+**No middleman:** Claude Code deploys directly, no Claude Project orchestrator
