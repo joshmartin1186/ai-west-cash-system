@@ -1,8 +1,8 @@
-# AI West - Cash v4 System
+# AI West - Cash v5 System
 
-**Parallel Claude Development System for Production Applications**
+**Streamlined Two-Claude Development System for Production Applications**
 
-Cash v4 is AI West's proprietary system for coordinating two parallel Claude instances to build production applications in 2-3 days. This repository contains all operating instructions, workflow documentation, and templates.
+Cash v5 is AI West's proprietary system for building production applications in 2-3 days. This version eliminates the Claude Project middleman for a direct Cash → Claude Code workflow.
 
 ---
 
@@ -12,45 +12,43 @@ Cash v4 is AI West's proprietary system for coordinating two parallel Claude ins
 ┌─────────────────────────────────────────────────────────────┐
 │                      CASH (Discovery)                        │
 │                                                              │
-│   Analyzes requirements → Creates GitHub repo with 14 files  │
+│   Analyzes requirements → Creates GitHub repo + Local folder │
+│   Generates Claude Code starter prompt                       │
 │                                                              │
 │                           ↓                                  │
-│                      GITHUB REPO                             │
-│                    (Source of Truth)                         │
+│   ┌─────────────────────────────────────────────────────┐   │
+│   │                    OUTPUTS                           │   │
+│   │  1. GitHub Repo (14 files)                          │   │
+│   │  2. Local Project Folder ~/projects/[name]/         │   │
+│   │  3. Claude Code Starter Prompt                      │   │
+│   └─────────────────────────────────────────────────────┘   │
 │                           ↓                                  │
-│              ┌───────────┴───────────┐                       │
-│              ↓                       ↓                       │
-│   ┌─────────────────┐     ┌─────────────────┐               │
-│   │  Claude Project │     │   Claude Code   │               │
-│   │  (Orchestrator) │     │    (Builder)    │               │
-│   │                 │     │                 │               │
-│   │ - GitHub only   │     │ - Local clone   │               │
-│   │ - Monitors      │←───→│ - Commits       │               │
-│   │ - Reviews       │     │ - Pushes        │               │
-│   │ - Deploys       │     │ - Builds        │               │
-│   └─────────────────┘     └─────────────────┘               │
-│              ↑                       ↑                       │
-│              └───────────┬───────────┘                       │
-│                          ↓                                   │
-│                Communication via                             │
-│                GitHub commits ONLY                           │
+│              ┌───────────────────────┐                       │
+│              │     Claude Code       │                       │
+│              │      (Builder)        │                       │
+│              │                       │                       │
+│              │ - Uses local clone    │                       │
+│              │ - Builds code         │                       │
+│              │ - Commits every 2-3   │                       │
+│              │ - Pushes immediately  │                       │
+│              │ - Deploys to Vercel   │                       │
+│              └───────────────────────┘                       │
+│                           ↓                                  │
+│                    PRODUCTION APP                            │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**Three Coordinated Agents:**
-1. **Cash (Discovery)** - Analyzes requirements, creates GitHub repo with 14 files
-2. **Claude Project (Orchestrator)** - Monitors GitHub, reviews, deploys (NEVER touches local files)
-3. **Claude Code (Builder)** - Clones repo, builds locally, commits/pushes continuously
-
-**Communication:** GitHub commits ONLY (no direct communication between Claudes)
+**Two Coordinated Agents:**
+1. **Cash (Discovery)** - Analyzes requirements, creates GitHub repo + local folder, generates starter prompt
+2. **Claude Code (Builder)** - Builds, commits, deploys - the only builder
 
 **Timeline:** 2-3 days from requirements to production (5-7 deploy cycles)
 
 ---
 
-## The 14 Files
+## The 13 Files
 
-Cash generates 14 files for every project:
+Cash generates 13 files for every project:
 
 ### Specification Files (1-11)
 
@@ -68,13 +66,12 @@ Cash generates 14 files for every project:
 | DEPLOYMENT_CHECKLIST.md | Iterative deployment procedures |
 | AI_WEST_DESIGN_SYSTEM.md | Copy master file exactly, never modify |
 
-### Execution Files (12-14)
+### Execution Files (12-13)
 
 | File | Purpose |
-|------|---------||
-| EXECUTION_PLAN.md | Task-by-task build sequence with commands |
-| PROJECT_INSTRUCTIONS.md | Paste into Claude Project (orchestrator context) |
-| CODE_STARTER_PROMPT.md | Paste into Claude Code (builder context) |
+|------|---------|
+| EXECUTION_PLAN.md | Task-by-task build sequence with exact commands |
+| CODE_STARTER_PROMPT.md | Paste into Claude Code to begin building |
 
 ---
 
@@ -82,42 +79,19 @@ Cash generates 14 files for every project:
 
 ### Phase 1: Discovery (Cash)
 
-1. **Trigger:** "Pull my conversation with [client] from Fireflies"
+1. **Trigger:** "Pull my conversation with [client] from Fireflies and create a project"
 2. **Cash:** Retrieves transcript, extracts requirements
-3. **Cash:** Generates all 14 files
-4. **Cash:** Creates GitHub repository
-5. **Cash:** Pushes all files to repo
-6. **Cash:** Reports repo URL to Josh
+3. **Cash:** Generates all 13 files
+4. **Cash:** Creates GitHub repository and pushes files
+5. **Cash:** Creates local project folder using Desktop Commander
+6. **Cash:** Generates Claude Code starter prompt
 
-### Phase 2: Setup (Josh)
+### Phase 2: Building (Josh + Claude Code)
 
-1. **Create TWO separate Claude Desktop windows**
-2. **Window 1 (Claude Project):**
-   - Open PROJECT_INSTRUCTIONS.md from GitHub
-   - Copy entire contents
-   - Paste as instructions
-3. **Window 2 (Claude Code):**
-   - Open CODE_STARTER_PROMPT.md from GitHub
-   - Copy entire contents
-   - Paste to start building
-
-### Phase 3: Building (Automated)
-
-```
-Claude Code commits → GitHub → Claude Project sees commits
-                                        ↓
-                      Claude Project reviews/writes feedback to GitHub
-                                        ↓
-                      Claude Code pulls and continues
-```
-
-**Rules:**
-- ✅ All communication via GitHub only
-- ✅ Claude Code pushes every 2-3 tasks
-- ✅ Claude Project reads/writes GitHub only
-- ❌ Never direct communication between Claudes
-- ❌ Claude Project never touches local files
-- ❌ Claude Code never reads PROJECT_INSTRUCTIONS.md
+1. **Josh:** Opens Claude Code (Claude Desktop with MCP tools)
+2. **Josh:** Pastes the CODE_STARTER_PROMPT.md content
+3. **Claude Code:** Clones repo, builds, commits, pushes, deploys
+4. **Done:** Production app live
 
 ---
 
@@ -128,44 +102,31 @@ Claude Code commits → GitHub → Claude Project sees commits
 📋 **[CASH_OPERATING_INSTRUCTIONS.md](docs/CASH_OPERATING_INSTRUCTIONS.md)**
 - Complete operating instructions for Cash
 - Fireflies transcript retrieval
-- 14-file generation process
-- GitHub repo creation workflow
+- 13-file generation process
+- GitHub repo + local folder creation
 
 📖 **[COMPLETE_WORKFLOW.md](docs/COMPLETE_WORKFLOW.md)**
 - End-to-end workflow from requirements to production
-- Parallel Claude coordination
-- GitHub-based communication protocol
+- Streamlined two-Claude coordination
 
-📝 **[14_FILE_TEMPLATE.md](docs/14_FILE_TEMPLATE.md)**
-- Templates for all 14 project files
+📝 **[13_FILE_TEMPLATE.md](docs/13_FILE_TEMPLATE.md)**
+- Templates for all 13 project files
 - Overshared instruction examples
-- Complete specifications
-
-🎯 **[PROJECT_CREATION_INSTRUCTIONS.md](docs/PROJECT_CREATION_INSTRUCTIONS.md)**
-- How Cash creates GitHub repos first
-- File generation standards
-- Oversharing methodology
 
 🚀 **[DEPLOYMENT_CHECKLIST.md](docs/DEPLOYMENT_CHECKLIST.md)**
 - Continuous deployment procedures
 - GitHub → Vercel workflow
-- Production testing
 
 ### Templates (`/templates/`)
-
-📄 **[PROJECT_INSTRUCTIONS_TEMPLATE.md](templates/PROJECT_INSTRUCTIONS_TEMPLATE.md)**
-- Template for Claude Project orchestrator instructions
-- GitHub-only monitoring and review
-- Never accesses local files
 
 🔧 **[CODE_STARTER_PROMPT_TEMPLATE.md](templates/CODE_STARTER_PROMPT_TEMPLATE.md)**
 - Template for Claude Code builder instructions
 - Overshared task definitions
-- Commit/push protocols
+- Commit/push/deploy protocols
 
 💬 **[COMMUNICATION_TEMPLATES.md](templates/COMMUNICATION_TEMPLATES.md)**
-- GitHub-based feedback patterns
-- Issue and PR templates
+- Client communication templates
+- Handoff emails
 
 ### YouTube Assets (`/youtube/`)
 
@@ -177,56 +138,25 @@ Claude Code commits → GitHub → Claude Project sees commits
 ## Key Principles
 
 ### GitHub-First Architecture
-- ✅ Cash creates GitHub repo BEFORE anything else
-- ✅ GitHub is the ONLY source of truth
-- ✅ Claude Project reads/writes GitHub only
-- ✅ Claude Code clones, commits, pushes to GitHub
-- ✅ No local folder confusion
+- ✅ Cash creates GitHub repo with all files
+- ✅ Cash creates local folder as exact clone
+- ✅ GitHub is the source of truth
+- ✅ Claude Code works from local clone
+- ✅ Continuous commits keep everything in sync
 
 ### Oversharing Instructions
-Every task includes:
+Every task in EXECUTION_PLAN.md includes:
 - Exact terminal commands
 - Full file contents
 - Expected outputs
 - Testing commands
 - Troubleshooting steps
 
-**Bad:**
-```
-Task 3: Set up Supabase connection
-```
-
-**Good (Overshared):**
-```
-Task 3: Set up Supabase connection
-
-Step 1: Create lib directory
-$ mkdir -p code/lib
-
-Step 2: Create Supabase client
-$ cat > code/lib/supabase.ts << 'EOF'
-import { createClient } from '@supabase/supabase-js'
-// ... full file content
-EOF
-
-Step 3: Test connection
-$ cd code && npm run dev
-
-Expected: Server starts without Supabase errors
-
-Troubleshooting:
-- If "Invalid API key": Check SUPABASE_ANON_KEY in .env.local
-- If "Connection refused": Verify Supabase project is running
-
-Step 4: Commit
-$ git add . && git commit -m "Phase 1 Task 3: Supabase connection" && git push
-```
-
-### Parallel Instance Separation
-- Claude Project: Orchestrator (GitHub only)
-- Claude Code: Builder (local clone only)
-- Communication: GitHub commits only
-- No direct interaction ever
+### No Middleman
+- ❌ No Claude Project orchestrator
+- ✅ Cash hands off directly to Claude Code
+- ✅ One Claude builds everything
+- ✅ Simpler = faster = better
 
 ---
 
@@ -264,8 +194,7 @@ $ git add . && git commit -m "Phase 1 Task 3: Supabase connection" && git push
 
 **Speed:** 2-3 days from requirements to production (5-7 deploy cycles)
 **Quality:** Zero security vulnerabilities, optimized performance
-**Testing:** Continuous via GitHub PR reviews
-**Documentation:** Complete handoff materials
+**Simplicity:** Two Claudes, not three. One builder, not two.
 **Result:** Professional applications ready for immediate use
 
 ---
@@ -278,6 +207,6 @@ Website: aiwest.co
 ---
 
 **Last Updated:** January 2026
-**Version:** 4.0 (Parallel Claude Architecture)
+**Version:** 5.0 (Streamlined Two-Claude Architecture)
 
 © 2025 AI West LLC. All rights reserved.

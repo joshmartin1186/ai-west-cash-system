@@ -1,51 +1,41 @@
-# CODE_STARTER_PROMPT.md - Template for Claude Code (Builder)
+# CODE_STARTER_PROMPT.md - Template for Claude Code (v5)
 
 > **This file is pasted into Claude Code to start building.**
-> **Claude Code works LOCALLY and pushes to GitHub continuously.**
+> **Claude Code is the ONLY builder. There is no orchestrator.**
 
 ---
 
-# {Project Name} - Claude Code Instructions
+# {Project Name} - Claude Code Build Instructions
 
-## Your Role: BUILDER
+## Your Role: SOLE BUILDER
 
-You are Claude Code, the **BUILDER** of this project. Your job is to:
+You are Claude Code, the **ONLY** builder for this project. Your job is to:
 
-1. **Clone** - Clone the GitHub repository locally
-2. **Build** - Execute tasks from EXECUTION_PLAN.md
-3. **Test** - Verify each task works before committing
-4. **Commit** - Commit every 2-3 tasks
-5. **Push** - Push immediately after every commit
+1. **Build** - Execute all tasks from EXECUTION_PLAN.md
+2. **Test** - Verify each task works before committing
+3. **Commit** - Commit every 2-3 tasks
+4. **Push** - Push immediately after every commit
+5. **Deploy** - Deploy to Vercel when features are complete
+6. **Handoff** - Pre-seed accounts and send handoff email
 
-**CRITICAL RULES:**
-- ✅ Clone the repo to ~/projects/{project-name}/
-- ✅ Build in the local clone
-- ✅ Commit every 2-3 tasks
-- ✅ Push immediately after every commit
-- ❌ NEVER go more than 3 tasks without committing
-- ❌ NEVER push broken code (test first!)
-- ❌ NEVER communicate directly with Claude Project
+**There is no orchestrator. You handle everything from build to deployment.**
 
 ---
 
-## Repository
+## Project Location
 
 **GitHub:** https://github.com/joshmartin1186/{project-name}
 **Local:** ~/projects/{project-name}/
 
+The repo has already been cloned. You're ready to build.
+
 ---
 
-## STEP 1: Clone the Repository
+## STEP 1: Verify Setup
 
 ```bash
-# Navigate to projects directory
-cd ~/projects
-
-# Clone the repository
-git clone https://github.com/joshmartin1186/{project-name}.git
-
-# Enter the project
-cd {project-name}
+# Navigate to project
+cd ~/projects/{project-name}
 
 # Verify files are present
 ls -la
@@ -61,7 +51,7 @@ API_INTEGRATIONS.md
 UI_SPECIFICATIONS.md
 BUILD_PHASES.md
 EXECUTION_PLAN.md
-... (all 14 files)
+... (all 13 files)
 ```
 
 ---
@@ -78,17 +68,15 @@ This file contains **exact commands** for every task. Follow it precisely.
 
 ## STEP 3: Begin Building
 
-### Phase 1: Foundation
+### Phase 1: Foundation (Tasks 1-8)
 
 #### Task 1: Initialize Next.js Project
 
 **Commands:**
 ```bash
-# Create code directory
+cd ~/projects/{project-name}
 mkdir -p code
 cd code
-
-# Initialize Next.js
 npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir=false --import-alias="@/*"
 ```
 
@@ -100,11 +88,6 @@ npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir=fa
 - App Router: Yes
 - Import alias: @/*
 
-**Expected Output:**
-```
-Success! Created {project-name} at ~/projects/{project-name}/code
-```
-
 **Verify:**
 ```bash
 ls -la
@@ -115,8 +98,7 @@ ls -la
 ```bash
 npm run dev
 # Should see: ▲ Next.js 14.x.x
-# Should see: - Local: http://localhost:3000
-# Open browser: Should see Next.js default page
+# Open browser: http://localhost:3000
 ```
 
 **Commit:**
@@ -150,7 +132,7 @@ npx shadcn-ui@latest init
 - Base color: Slate
 - CSS variables: Yes
 
-**Install shadcn components:**
+**Install components:**
 ```bash
 npx shadcn-ui@latest add button card input label select textarea dialog dropdown-menu table tabs toast
 ```
@@ -161,130 +143,20 @@ cat package.json | grep -E "supabase|stripe"
 # Should see both packages listed
 ```
 
-**Test:**
-```bash
-npm run dev
-# Should start without errors
-```
-
 **Commit:**
 ```bash
 cd ~/projects/{project-name}
 git add .
-git commit -m "Phase 1 Task 2: Install dependencies (Supabase, Stripe, shadcn)"
+git commit -m "Phase 1 Task 2: Install dependencies"
 git push
 ```
 
 ---
 
-#### Task 3: Set Up Supabase Connection
-
-**Step 1: Create lib directory**
-```bash
-cd ~/projects/{project-name}/code
-mkdir -p lib
-```
-
-**Step 2: Create browser client**
-```bash
-cat > lib/supabase.ts << 'EOF'
-import { createBrowserClient } from '@supabase/ssr'
-
-export function createClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
-}
-EOF
-```
-
-**Step 3: Create server client**
-```bash
-cat > lib/supabase-server.ts << 'EOF'
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
-
-export async function createServerSupabaseClient() {
-  const cookieStore = await cookies()
-  
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options)
-            })
-          } catch (error) {
-            // Handle read-only cookie store in Server Components
-          }
-        },
-      },
-    }
-  )
-}
-EOF
-```
-
-**Step 4: Create .env.local**
-```bash
-cat > .env.local << 'EOF'
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your-project-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-
-# Stripe
-STRIPE_SECRET_KEY=sk_test_xxx
-STRIPE_PUBLISHABLE_KEY=pk_test_xxx
-STRIPE_WEBHOOK_SECRET=whsec_xxx
-
-# App
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-EOF
-```
-
-**Step 5: Add .env.local to .gitignore**
-```bash
-echo ".env.local" >> .gitignore
-```
-
-**Verify:**
-```bash
-ls lib/
-# Should see: supabase.ts, supabase-server.ts
-```
-
-**Test:**
-```bash
-npm run dev
-# Should start without import errors
-```
-
-**Commit:**
-```bash
-cd ~/projects/{project-name}
-git add .
-git commit -m "Phase 1 Task 3: Supabase connection configured"
-git push
-```
-
-**Troubleshooting:**
-- If `Module not found: @supabase/ssr`: Run `npm install @supabase/ssr`
-- If TypeScript errors: Check tsconfig.json includes lib folder
-- If env var errors: Restart dev server after creating .env.local
-
----
-
-#### Tasks 4-8: Continue from EXECUTION_PLAN.md
+#### Tasks 3-8: Continue from EXECUTION_PLAN.md
 
 Open `~/projects/{project-name}/EXECUTION_PLAN.md` and continue with:
+- Task 3: Set up Supabase connection
 - Task 4: Create database schema
 - Task 5: Implement authentication
 - Task 6: Create base layout
@@ -295,15 +167,71 @@ Open `~/projects/{project-name}/EXECUTION_PLAN.md` and continue with:
 
 ---
 
-### Phase 2, 3, 4: Continue from EXECUTION_PLAN.md
+### Phase 2: Core UI (Tasks 9-15)
 
-Follow EXECUTION_PLAN.md for all remaining tasks.
+Continue from EXECUTION_PLAN.md...
+
+---
+
+### Phase 3: Automation (Tasks 16-21)
+
+Continue from EXECUTION_PLAN.md...
+
+---
+
+### Phase 4: Deploy & Handoff (Tasks 22-30)
+
+When all features are built, follow DEPLOYMENT_CHECKLIST.md:
+
+#### Task 22: Deploy to Vercel
+
+1. Go to vercel.com/new
+2. Import GitHub repo: github.com/joshmartin1186/{project-name}
+3. Root Directory: code
+4. Framework: Next.js (auto-detected)
+5. Click Deploy
+
+#### Task 23: Configure Environment Variables
+
+Add to Vercel:
+```
+NEXT_PUBLIC_SUPABASE_URL=[from Supabase]
+NEXT_PUBLIC_SUPABASE_ANON_KEY=[from Supabase]
+SUPABASE_SERVICE_ROLE_KEY=[from Supabase]
+STRIPE_SECRET_KEY=sk_live_xxx
+STRIPE_PUBLISHABLE_KEY=pk_live_xxx
+STRIPE_WEBHOOK_SECRET=[after webhook setup]
+GEMINI_API_KEY=[from Google AI Studio]
+NEXT_PUBLIC_APP_URL=https://{project-name}.vercel.app
+```
+
+#### Task 24: Set Up Production Stripe Webhook
+
+1. Go to Stripe Dashboard → Webhooks
+2. Add endpoint: `https://{project-name}.vercel.app/api/webhooks/stripe`
+3. Select events: checkout.session.completed, customer.subscription.updated, etc.
+4. Copy webhook secret to Vercel env vars
+5. Redeploy
+
+#### Task 25: Update Supabase Redirect URLs
+
+1. Go to Supabase → Authentication → URL Configuration
+2. Add Site URL: `https://{project-name}.vercel.app`
+3. Add Redirect URL: `https://{project-name}.vercel.app/auth/callback`
+
+#### Tasks 26-30: Client Handoff
+
+- Pre-seed client as Owner
+- Pre-seed Josh as Developer
+- Send handoff email (template in DEPLOYMENT_CHECKLIST.md)
+- Schedule walkthrough call
 
 ---
 
 ## Commit Protocol
 
-**Every 2-3 tasks:**
+**CRITICAL: Commit every 2-3 tasks!**
+
 ```bash
 cd ~/projects/{project-name}
 git add .
@@ -317,10 +245,9 @@ git push
 - "Phase 2 Task 9-10: Dashboard and metrics"
 
 **Why this matters:**
-- Claude Project monitors your commits on GitHub
-- Small commits = easier to review
+- Small commits = easier to debug if something breaks
 - Continuous pushes = no lost work
-- Clear messages = progress tracking
+- Clear messages = progress tracking for Josh
 
 ---
 
@@ -353,60 +280,37 @@ npm run dev
 
 ## When You Hit a Blocker
 
-1. **Create GitHub Issue:**
+1. **Tell Josh what's wrong**
+
+2. **Create GitHub Issue:**
 ```bash
-# In your terminal, describe the issue in a file
-cat > /tmp/blocker.md << 'EOF'
-## Blocker: [Title]
-
-### What I'm trying to do
-[Task description]
-
-### What's happening
-[Error message or unexpected behavior]
-
-### What I've tried
-1. [Attempt 1]
-2. [Attempt 2]
-
-### Relevant code
-```
-[Code snippet]
-```
-EOF
+# Use GitHub MCP or CLI
+gh issue create --title "Blocker: [Title]" --body "## What I'm trying to do\n[Description]\n\n## What's happening\n[Error message]\n\n## What I've tried\n[Attempts]"
 ```
 
-2. **Commit current work:**
+3. **Commit current work:**
 ```bash
 git add .
 git commit -m "WIP: [Task] - blocked on [issue]"
 git push
 ```
 
-3. **Tell Josh:**
-```
-I've hit a blocker on Task X.
-
-Issue: [Brief description]
-
-I've committed my current work and created Issue #X on GitHub.
-```
+4. **Wait for guidance**
 
 ---
 
 ## What You Should NOT Do
 
-- ❌ Read PROJECT_INSTRUCTIONS.md (that's for Claude Project)
-- ❌ Talk to Claude Project directly (communicate via GitHub)
 - ❌ Go more than 3 tasks without committing
 - ❌ Push broken code (always test first)
-- ❌ Skip the verification steps in EXECUTION_PLAN.md
+- ❌ Skip the verification steps
 - ❌ Hardcode secrets (always use environment variables)
 - ❌ Skip RLS policies on database tables
+- ❌ Wait until the end to deploy (deploy early, deploy often)
 
 ---
 
-## Reference Files in Your Local Clone
+## Reference Files in ~/projects/{project-name}/
 
 | File | What It Contains |
 |------|------------------|
@@ -416,18 +320,17 @@ I've committed my current work and created Issue #X on GitHub.
 | UI_SPECIFICATIONS.md | Page layouts and flows |
 | AI_WEST_DESIGN_SYSTEM.md | Styling rules |
 | API_INTEGRATIONS.md | External service setup |
+| DEPLOYMENT_CHECKLIST.md | How to deploy and handoff |
 
 ---
 
 ## START BUILDING NOW
 
 ```bash
-# If you haven't cloned yet:
-cd ~/projects
-git clone https://github.com/joshmartin1186/{project-name}.git
-cd {project-name}
+# Navigate to project
+cd ~/projects/{project-name}
 
-# Read the execution plan:
+# Read the execution plan
 cat EXECUTION_PLAN.md
 
 # Start with Task 1!
@@ -435,8 +338,8 @@ cat EXECUTION_PLAN.md
 
 ---
 
-**You are the builder.**
+**You are the sole builder.**
 
-**Clone. Build. Test. Commit. Push. Repeat.**
+**Build. Test. Commit. Push. Deploy. Handoff.**
 
 **Let's go! 🚀**
