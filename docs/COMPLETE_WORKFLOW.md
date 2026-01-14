@@ -1,720 +1,335 @@
-# AI-Assisted Development Workflow - Complete System
+# Complete Workflow - Parallel Claude Architecture
 
-## System Overview
+## Overview
 
-This workflow coordinates three AI assistants for rapid application development:
-1. **Discovery Assistant** - Analyzes requirements, generates documentation
-2. **Architect Assistant** - Sets up infrastructure, manages build, tests comprehensively
-3. **Code Assistant** - Executes tasks, builds application, implements fixes
+The AI West build system uses three coordinated agents:
 
-**Key Innovation:** Single local folder with file-based communication enables parallel work while maintaining optimal context size.
+1. **Cash (Discovery)** - Analyzes requirements, creates GitHub repo with 14 files
+2. **Claude Project (Orchestrator)** - Monitors GitHub, reviews, deploys
+3. **Claude Code (Builder)** - Clones repo, builds locally, commits/pushes
 
 ---
 
-## The Complete Workflow
+## Architecture Diagram
 
-### Step 1: Discovery & Documentation Generation
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                      │
+│  PHASE 1: DISCOVERY (Cash)                                          │
+│                                                                      │
+│  Trigger: "Pull my conversation with [client] from Fireflies"       │
+│                                                                      │
+│  1. Retrieve Fireflies transcript                                    │
+│  2. Extract requirements                                             │
+│  3. Generate 14 files                                                │
+│  4. Create GitHub repository                                         │
+│  5. Push all files                                                   │
+│  6. Report to Josh                                                   │
+│                                                                      │
+│  Output: https://github.com/joshmartin1186/[project-name]           │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+                                   │
+                                   ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                      │
+│  PHASE 2: SETUP (Josh)                                              │
+│                                                                      │
+│  1. Open GitHub repo                                                 │
+│  2. Create Claude Desktop Window #1 (Claude Project)                 │
+│     - Open PROJECT_INSTRUCTIONS.md                                   │
+│     - Copy entire contents                                           │
+│     - Paste as instructions                                          │
+│  3. Create Claude Desktop Window #2 (Claude Code)                    │
+│     - Open CODE_STARTER_PROMPT.md                                    │
+│     - Copy entire contents                                           │
+│     - Paste to start building                                        │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+                                   │
+                                   ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                      │
+│  PHASE 3: PARALLEL BUILDING                                         │
+│                                                                      │
+│  ┌───────────────────┐         ┌───────────────────┐                │
+│  │   Claude Project  │         │   Claude Code     │                │
+│  │   (Orchestrator)  │         │   (Builder)       │                │
+│  │                   │         │                   │                │
+│  │ - GitHub only     │◄───────►│ - Local clone     │                │
+│  │ - Monitors        │ GitHub  │ - Builds code     │                │
+│  │ - Reviews         │ commits │ - Tests locally   │                │
+│  │ - Deploys         │         │ - Commits often   │                │
+│  │                   │         │ - Pushes always   │                │
+│  └───────────────────┘         └───────────────────┘                │
+│                                                                      │
+│  Communication: GitHub commits ONLY                                  │
+│  Claude Code pushes → Claude Project sees commits                    │
+│  Claude Project writes issues → Claude Code pulls                    │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+                                   │
+                                   ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                      │
+│  PHASE 4: DEPLOYMENT                                                │
+│                                                                      │
+│  Claude Project guides Josh through:                                 │
+│  1. Connect Vercel to GitHub repo                                    │
+│  2. Configure environment variables                                  │
+│  3. Deploy                                                           │
+│  4. Post-deploy configuration (OAuth, Stripe webhook)                │
+│  5. Production testing                                               │
+│  6. Client handoff                                                   │
+│                                                                      │
+│  Output: Live production app at https://[project].vercel.app        │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
-**Trigger:** "Analyze [source] and create project documentation"
+---
 
-**Discovery Assistant Process:**
+## Phase Details
 
-#### 1a. Retrieve Requirements
+### Phase 1: Discovery (Cash)
+
+**Trigger:** "Pull my conversation with [client] from Fireflies"
+
+**Steps:**
+
+1. **Retrieve transcript:**
 ```javascript
-// From transcription service API
-const transcript = await transcriptionService.get({
-  search: "[client/project name]",
+fireflies:get_transcripts({
+  search: "[client name]",
   sort_by: "date",
   limit: 1
 })
-
-// Or from uploaded document
-const requirements = readDocument("[filepath]")
-
-// Or from direct conversation
-const requirements = parseUserInput()
 ```
 
-**Extract:**
-- Client pain points and frustrations
-- Technical requirements and preferences
-- Business model and success criteria
-- Timeline expectations
-- Budget constraints
-- User personas and workflows
-- Integration needs
-- Team size and user count
-
-#### 1b. Analyze Business Context
-
-**Determine demographic:**
-- Individual/freelancer
-- Small team (2-10 people)
-- Mid-size company (10-50 people)
-- Enterprise (50+ people)
-
-**Determine pricing model:**
-- Standard tier (single system)
-- Professional tier (multiple systems)
-- Enterprise tier (full platform)
-- Custom development
-
-**Identify productization potential:**
-- Similar customer segments
-- Market opportunity size
-- SaaS positioning strategy
-
-#### 1c. Generate All 12 Project Files
-
-**Complete documentation package includes:**
-
-1. PROJECT_OVERVIEW.md - Business context and goals
-2. TECHNICAL_ARCHITECTURE.md - Complete tech stack
-3. DATABASE_SCHEMA.md - SQL schema with RLS
-4. API_INTEGRATIONS.md - External services
-5. UI_SPECIFICATIONS.md - All pages and flows
-6. BUILD_PHASES.md - Task breakdown by phase
-7. DEBUGGING_GUIDE.md - Troubleshooting
-8. CLIENT_REQUIREMENTS.md - Specific needs
-9. PRODUCTIZATION_GUIDE.md - SaaS strategy
-10. DEPLOYMENT_CHECKLIST.md - Deploy steps
-11. DESIGN_SYSTEM.md - Styling guidelines
-12. PROJECT_INSTRUCTIONS.md - How to use docs
-
-#### 1d. Create Communication Templates
-
-**current-task.md template:**
-```markdown
-# Current Task Assignment
-
-**Phase:** [X] - [Phase Name]
-**Tasks:** [Task Numbers]
-
-## Instructions
-Execute tasks [X-Y] from BUILD_PHASES.md.
-All code goes in /code/ subfolder.
-Update progress.md as you complete tasks.
-
-## Important Notes
-- Use environment variables from .env.local
-- Follow design system guidelines
-- Test locally before marking complete
-```
-
-**progress.md template:**
-```markdown
-# Build Progress
-
-**Phase:** [X]
-**Status:** Not Started
-**Last Updated:** [Timestamp]
-
-## Completed Tasks
-[None yet]
-
-## Current Task
-[Next task to start]
-
-## Blockers
-None
-
-## Next Steps
-[What's coming next]
-```
-
-**feedback.md template:**
-```markdown
-# Review Feedback - Phase [X]
-
-**Reviewed:** [Timestamp]
-**Status:** [In Review / Issues Found / Approved]
-
-## Visual Testing Results
-[UI testing findings]
-
-## Codebase Audit Results
-[Code quality findings]
-
-## Required Fixes
-
-### CRITICAL
-[Must fix before proceeding]
-
-### HIGH
-[Should fix before proceeding]
-
-### MEDIUM
-[Can fix in next phase]
-
-### LOW
-[Nice to have]
-```
-
-#### 1e. Package & Deliver
-
-```bash
-# Create output structure
-/project-name-docs/
-├── [12 project files]
-├── /comms-templates/
-│   ├── current-task.md
-│   ├── progress.md
-│   └── feedback.md
-└── README.md
-```
-
-**Present to user:**
-- Project summary (2-3 sentences)
-- Technical approach
-- Business model
-- Timeline estimate
-- Next steps
-
----
-
-### Step 2: Project Setup (Architect Assistant)
-
-**User Action:** Creates AI assistant project, uploads all files, types "begin"
-
-**Architect Assistant Response:**
-
-#### 2a. Create Local Folder Structure
-
-```bash
-# Create root project folder
-mkdir -p /workspace/[project-name]
-cd /workspace/[project-name]
-
-# Create complete structure
-mkdir -p code
-mkdir -p .claude-comms/{inbox-code,outbox-code,status}
-mkdir -p docs
-
-# Copy project files to docs
-cp [uploaded files] ./docs/
-
-# Create initial communication files
-cat > .claude-comms/inbox-code/current-task.md << EOF
-# Current Task Assignment
-
-**Phase:** 1 - Foundation
-**Tasks:** 1-8
-
-## Instructions
-Execute tasks 1-8 from BUILD_PHASES.md in /docs/.
-All code goes in the /code/ subfolder.
-Update .claude-comms/outbox-code/progress.md as you complete each task.
-EOF
-
-cat > .claude-comms/outbox-code/progress.md << EOF
-# Build Progress
-
-**Phase:** 1 - Foundation
-**Status:** Not Started
-**Last Updated:** $(date)
-
-## Completed Tasks
-[None yet]
-
-## Current Task
-Waiting for Code Assistant to begin
-EOF
-```
-
-#### 2b. Create Database Instance
-
-```bash
-# Using database service API
-createDatabaseProject({
-  name: "[Project Name]",
-  region: "optimal-region",
-  plan: "production"
-})
-
-# Apply complete schema from docs/DATABASE_SCHEMA.md
-applyMigrations(extractSQL(schema))
-
-# Verify tables created
-listTables()
-```
-
-#### 2c. Create Environment Variables
-
-```bash
-# Create .env.local in code folder
-cat > code/.env.local << EOF
-# Database
-DATABASE_URL=[connection string]
-DATABASE_KEY=[service key]
-
-# Authentication
-AUTH_SECRET=[generated secret]
-
-# External APIs
-API_KEY_1=[key]
-API_KEY_2=[key]
-
-# App Config
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-EOF
-```
-
-#### 2d. Report Completion
-
-```
-Setup complete! ✅
-
-Project Folder: /workspace/[project-name]
-
-Database Instance:
-- URL: [database url]
-- Status: Active
-- Tables: [list created tables]
-
-Structure Created:
-- /code/ - Ready for app initialization
-- /docs/ - All 12 project files loaded
-- /.claude-comms/ - Communication layer configured
-- .env.local - Environment variables configured
-
-Next Steps:
-1. Open Code Assistant in same workspace
-2. Select folder: /workspace/[project-name]
-3. Type: "begin"
-```
-
----
-
-### Step 3: Build Phase (Code Assistant)
-
-**User Action:** Opens Code Assistant, selects folder, types "begin"
-
-**Code Assistant Response:**
-
-#### 3a. Read Assignment
-
-```bash
-# Read what to do
-cat docs/BUILD_PHASES.md
-cat .claude-comms/inbox-code/current-task.md
-
-# Understand structure
-ls -la
-cat README.md
-```
-
-#### 3b. Execute Phase 1 Tasks
-
-**Task 1: Initialize Framework**
-```bash
-cd code
-npx create-next-app@latest . --typescript --tailwind --app
-```
-
-**Task 2: Install Dependencies**
-```bash
-npm install [required packages]
-```
-
-**Task 3: Database Connection**
-```typescript
-// lib/database.ts
-import { createClient } from '@database/client'
-
-const dbUrl = process.env.DATABASE_URL!
-const dbKey = process.env.DATABASE_KEY!
-
-export const db = createClient(dbUrl, dbKey)
-```
-
-**Tasks 4-8: Continue building foundation...**
-
-#### 3c. Update Progress After Each Task
-
-```bash
-# After completing Task 1
-cat >> ../.claude-comms/outbox-code/progress.md << EOF
-
-## Progress Update - $(date)
-✅ Task 1: Framework initialized
-- App router configured
-- TypeScript enabled
-- Styling installed
-EOF
-
-# Update status
-echo "Task 1 complete: Framework initialized" > ../.claude-comms/status/last-action.txt
-```
-
-#### 3d. Test Locally Throughout
-
-```bash
-# After each major task
-npm run dev
-
-# Verify:
-# - No compilation errors
-# - Server starts successfully
-# - Can access localhost:3000
-# - No console errors
-```
-
-#### 3e. Signal Phase Complete
-
-```bash
-cat > ../.claude-comms/outbox-code/progress.md << EOF
-# Build Progress
-
-**Phase:** 1 - Foundation
-**Status:** Complete - Ready for Review
-**Last Updated:** $(date)
-
-## Completed Tasks
-✅ Task 1: Framework initialized
-✅ Task 2: All dependencies installed
-✅ Task 3: Database connection configured
-✅ Task 4: Schema verified
-✅ Task 5: Authentication implemented
-✅ Task 6: Base layout created
-✅ Task 7: Environment configured
-✅ Task 8: Local testing successful
-
-## Testing Results
-- ✅ npm run dev runs without errors
-- ✅ Accessible at localhost:3000
-- ✅ Database connection verified
-- ✅ No TypeScript errors
-- ✅ No console errors
-
-Phase 1 complete: $(date)
-EOF
-```
-
----
-
-### Step 4: Testing Phase (Architect Assistant)
-
-**User Action:** Switches to Architect Assistant, types "Review Phase 1"
-
-**Architect Assistant Response:**
-
-#### 4a. Check Status
-
-```bash
-# Read progress report
-cat .claude-comms/outbox-code/progress.md
-
-# Verify phase complete
-cat .claude-comms/status/current-phase.txt
-```
-
-#### 4b. Visual Testing (UI Testing Tool)
-
+2. **Extract requirements:**
+   - Client info (name, company, email)
+   - Problem statement
+   - Solution requirements
+   - Integrations needed
+   - Success criteria
+   - Timeline/budget hints
+   - User count (pricing tier)
+
+3. **Determine business context:**
+   - Demographic: Investor / Solopreneur / Startup
+   - Pricing tier: Based on user count and brains needed
+   - Productization potential
+
+4. **Generate 14 files:**
+   - Files 1-11: Specification files
+   - File 12: EXECUTION_PLAN.md (overshared commands)
+   - File 13: PROJECT_INSTRUCTIONS.md (for Claude Project)
+   - File 14: CODE_STARTER_PROMPT.md (for Claude Code)
+
+5. **Create GitHub repository:**
 ```javascript
-// Launch browser to local dev server
-await browser.launch('http://localhost:3000')
-await browser.screenshot()
-
-// Test homepage
-const homeLoads = await browser.evaluate(() => {
-  return document.querySelector('h1')?.textContent
+github:create_repository({
+  name: "[project-name]",
+  description: "[description]",
+  private: false
 })
-
-// Test signup flow
-await browser.navigate('/signup')
-await browser.fill('input[type="email"]', 'test@test.com')
-await browser.fill('input[type="password"]', 'Test123!')
-await browser.click('button[type="submit"]')
-await browser.screenshot()
-
-// Test login flow
-await browser.navigate('/login')
-await browser.fill('input[type="email"]', 'test@test.com')
-await browser.fill('input[type="password"]', 'Test123!')
-await browser.click('button[type="submit"]')
-await browser.screenshot()
-
-// Test dashboard
-await browser.navigate('/dashboard')
-await browser.screenshot()
-
-// Check for console errors
-const errors = await browser.getConsoleErrors()
 ```
 
-**Visual Testing Report:**
-```
-✅ Homepage loads correctly
-✅ Signup form displays
-✅ Login form displays
-✅ Can create account
-❌ Login form colors incorrect
-❌ Dashboard redirect broken - 404 error
-✅ No console errors
-❌ Mobile view: navbar overlaps content
-```
-
-#### 4c. Codebase Audit (File Reading)
-
-```bash
-# Read all code files
-find code/app -type f -name "*.tsx" -o -name "*.ts"
-find code/lib -type f -name "*.ts"
-find code/app/api -type f -name "route.ts"
+6. **Push all files:**
+```javascript
+github:push_files({
+  owner: "joshmartin1186",
+  repo: "[project-name]",
+  branch: "main",
+  files: [/* all 14 files */],
+  message: "Initial project documentation"
+})
 ```
 
-**Security Review:**
-```bash
-# Check for SQL injection
-grep -r "SELECT.*\${" code/
+7. **Report to Josh:**
+```
+Project Repository Created ✅
 
-# Check environment variables
-grep -r "process.env" code/ | grep -v "NEXT_PUBLIC"
+**Repository:** https://github.com/joshmartin1186/[project-name]
 
-# Check for exposed secrets
-grep -r "sk_live" code/
+**Business Model:**
+- Demographic: [X]
+- Configuration: [X] Brain(s)
+- Monthly: $[X]/month
+
+**Next Steps:**
+1. Open repository
+2. Create TWO Claude Desktop windows
+3. Window 1: Paste PROJECT_INSTRUCTIONS.md
+4. Window 2: Paste CODE_STARTER_PROMPT.md
 ```
 
-**Security Findings:**
-```
-❌ CRITICAL: SQL injection in code/app/api/search/route.ts line 15
-   Raw string interpolation in query
-
-❌ CRITICAL: Missing RLS policy on 'activities' table
-   Table exists but has no security policy
-
-✅ Environment variables used correctly
-✅ No hardcoded secrets found
-```
-
-**Performance Review:**
-```bash
-# Check for N+1 queries
-grep -r "for.*await" code/app
-
-# Check React optimization
-grep -r "React.memo" code/
-```
-
-**Performance Findings:**
-```
-❌ HIGH: N+1 query in dashboard
-   code/app/dashboard/page.tsx line 42
-   Fetching users in loop instead of join
-
-✅ Database indexes on all foreign keys
-
-❌ MEDIUM: Missing React.memo on ExpensiveChart
-   Re-renders on every parent update
-```
-
-#### 4d. Write Comprehensive Feedback
-
-```bash
-cat > .claude-comms/inbox-code/feedback.md << EOF
-# Phase 1 Review - Issues Found
-
-**Reviewed:** $(date)
-**Status:** Issues Found - Fixes Required
-
-## Visual Testing Results
-
-### ✅ Passed
-- Homepage loads correctly
-- Signup and login forms work
-- Can create accounts and authenticate
-- No console errors
-
-### ❌ Failed
-1. **Login form colors incorrect**
-   Location: code/app/login/page.tsx
-   Problem: Using default colors instead of brand colors
-   Fix: Update Button component to use primary color
-
-2. **Dashboard redirect broken**
-   Location: code/app/auth/callback/route.ts
-   Problem: Redirecting to /dashboard but route is /app/dashboard
-   Fix: Change redirect URL to '/app/dashboard'
-
-3. **Mobile navbar overlap**
-   Location: code/app/layout.tsx
-   Problem: Navbar doesn't collapse on mobile
-   Fix: Add responsive breakpoints
-
-## Codebase Audit Results
-
-### 🔴 CRITICAL Issues
-
-#### 1. SQL Injection Vulnerability
-**Location:** code/app/api/search/route.ts line 15
-**Problem:**
-\`\`\`typescript
-// UNSAFE
-const results = await db
-  .from('items')
-  .select('*')
-  .filter('name', 'ilike', \`%\${query}%\`)
-\`\`\`
-**Fix:**
-\`\`\`typescript
-// SAFE - Use parameterized query
-const results = await db
-  .from('items')
-  .select('*')
-  .ilike('name', \`%\${query}%\`)
-\`\`\`
-
-#### 2. Missing RLS Policy
-**Location:** Database - 'activities' table
-**Problem:** No Row Level Security policy
-**Fix:**
-\`\`\`sql
-ALTER TABLE activities ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users see own org" 
-ON activities FOR ALL 
-USING (organization_id = (
-  SELECT organization_id FROM users WHERE id = auth.uid()
-));
-\`\`\`
-
-### 🟡 HIGH Priority Issues
-
-#### 1. N+1 Query Problem
-**Location:** code/app/dashboard/page.tsx line 42
-**Problem:**
-\`\`\`typescript
-// Bad - 25 database calls
-const users = await getOrganizationUsers()
-for (const user of users) {
-  const activity = await getUserActivity(user.id)
-}
-\`\`\`
-**Fix:**
-\`\`\`typescript
-// Good - Single query with join
-const usersWithActivity = await db
-  .from('users')
-  .select('*, activities(*)')
-  .eq('organization_id', orgId)
-\`\`\`
-
-## Required Actions
-
-**Before proceeding to Phase 2:**
-1. ✅ Fix CRITICAL Issue #1: SQL injection
-2. ✅ Fix CRITICAL Issue #2: RLS policy
-3. ✅ Fix HIGH Issue #1: N+1 query
-4. ✅ Fix visual issues (colors, redirect, mobile nav)
-
-## Next Steps
-
-Read this feedback completely, fix all issues, update progress.md when complete, signal ready for re-review.
-EOF
-```
+**Cash's job is complete.**
 
 ---
 
-### Step 5: Code Implements Feedback (Code Assistant)
+### Phase 2: Setup (Josh)
 
-**User Action:** Switches to Code Assistant, types "Read feedback and fix"
+**Manual steps by Josh:**
 
-**Code Assistant implements all fixes, tests, updates progress.md**
+1. Open GitHub repo in browser
+2. **Window 1 - Claude Project:**
+   - Open new Claude Desktop conversation
+   - Navigate to PROJECT_INSTRUCTIONS.md on GitHub
+   - Copy entire file contents
+   - Paste into Claude as instructions
+3. **Window 2 - Claude Code:**
+   - Open new Claude Desktop conversation
+   - Navigate to CODE_STARTER_PROMPT.md on GitHub
+   - Copy entire file contents
+   - Paste into Claude to start building
 
----
-
-### Step 6: Architect Assistant Re-Reviews
-
-**User Action:** Switches to Architect, types "Re-review Phase 1"
-
-**Architect verifies all fixes, approves phase, assigns Phase 2**
-
----
-
-### Steps 7-10: Repeat Pattern
-
-**The cycle continues through all phases:**
-- Phase 2: Core UI (pages + data)
-- Phase 3: Integration (APIs + automation)
-- Phase 4: Deploy & Handoff
+**Result:** Two Claude instances running in parallel
 
 ---
 
-### Final Step: Deployment
+### Phase 3: Parallel Building
 
-**User Action:** "Deploy to production"
+**Claude Code (Builder):**
 
-**Architect Assistant handles:**
-1. GitHub repository creation
-2. Production hosting setup
-3. Environment variable configuration
-4. OAuth redirect updates
-5. Webhook configuration
-6. Production testing
-7. Client handoff documentation
+1. Clones repository to ~/projects/[project-name]/
+2. Reads EXECUTION_PLAN.md for exact commands
+3. Executes tasks one by one
+4. Tests each task locally
+5. Commits every 2-3 tasks
+6. Pushes immediately after every commit
+7. Creates GitHub issues for blockers
+
+**Claude Project (Orchestrator):**
+
+1. Monitors GitHub commits
+2. Reviews code quality when Josh asks
+3. Creates issues with feedback (CRITICAL/HIGH/MEDIUM/LOW)
+4. Updates spec files on GitHub if needed
+5. Prepares for deployment
+
+**Communication Protocol:**
+
+```
+Claude Code commits and pushes
+           ↓
+GitHub receives commits
+           ↓
+Claude Project reads commits
+           ↓
+Claude Project creates issue with feedback
+           ↓
+Claude Code pulls and reads issue
+           ↓
+Claude Code fixes and pushes
+           ↓
+Repeat
+```
+
+**Rules:**
+- ✅ All communication via GitHub
+- ✅ Claude Code commits every 2-3 tasks
+- ✅ Claude Project only uses GitHub MCP
+- ❌ No direct communication
+- ❌ Claude Project never touches local files
 
 ---
 
-## Key Benefits
+### Phase 4: Deployment
 
-### Context Optimization
-- Discovery: One-time, focused on requirements
-- Architect: Documentation + status (~35K tokens)
-- Code: Task assignments + code (~25K tokens)
-- No compression needed
+**When Josh says "Deploy to Vercel":**
 
-### Single Folder = Single Source of Truth
-- Both assistants work in same folder
-- Communication via explicit files
-- User just switches between assistants
-- All state persists in files
+Claude Project guides through:
 
-### Comprehensive Testing
-- Visual catches UX issues
-- Audit catches security/performance/quality
-- Issues fixed before production
-- Professional output
+1. **Verify ready:**
+   - Check all phases committed
+   - Check no open issues
 
-### Speed
-- 2-3 days from requirements to production
-- Minimal iteration cycles
-- Clear handoff points
-- Systematic process
+2. **Connect Vercel:**
+   - Go to vercel.com/new
+   - Import GitHub repo
+   - Root directory: code
+
+3. **Environment variables:**
+   - Add all from API_INTEGRATIONS.md
+
+4. **Deploy:**
+   - Click Deploy
+   - Wait for build
+
+5. **Post-deploy:**
+   - Update Supabase redirect URLs
+   - Configure Stripe webhook
+   - Redeploy if needed
+
+6. **Test production:**
+   - All critical paths
+   - Authentication flow
+   - Stripe checkout
+
+7. **Client handoff:**
+   - Pre-seed accounts
+   - Send handoff email
+   - Schedule walkthrough
 
 ---
 
 ## Timeline
 
-**Typical Project:**
-- Discovery: 30-45 minutes
-- Setup: 10-15 minutes
-- Phase 1 (Foundation): 2-3 hours
-- Phase 2 (Core UI): 3-4 hours
-- Phase 3 (Integration): 4-6 hours
-- Phase 4 (Deploy): 1-2 hours
-- **Total: 2-3 days to production**
+| Phase | Duration | Owner |
+|-------|----------|-------|
+| Discovery | 30-45 min | Cash |
+| Setup | 5 min | Josh |
+| Foundation (Phase 1) | 2-3 hours | Claude Code |
+| Core UI (Phase 2) | 3-4 hours | Claude Code |
+| Automation (Phase 3) | 4-6 hours | Claude Code |
+| Deploy & Handoff | 1-2 hours | Claude Project + Josh |
+| **Total** | **2-3 days** | |
 
 ---
 
-## Success Metrics
+## Success Criteria
 
-**Quality:**
-- Zero security vulnerabilities
-- No performance issues (N+1 queries, etc.)
-- Comprehensive error handling
-- Professional polish
+### Cash (Discovery)
+- [ ] GitHub repo created with 14 files
+- [ ] All files comprehensive and actionable
+- [ ] EXECUTION_PLAN overshared (exact commands)
+- [ ] PROJECT_INSTRUCTIONS defines GitHub-only orchestration
+- [ ] CODE_STARTER_PROMPT starts with clone command
 
-**Speed:**
-- Same-day setup to building
-- 2-3 days to production
-- Minimal back-and-forth
+### Claude Project (Orchestrator)
+- [ ] Uses GitHub MCP only
+- [ ] Never accesses local files
+- [ ] Reviews code thoroughly
+- [ ] Categorizes issues correctly
+- [ ] Guides deployment successfully
 
-**Professional Delivery:**
-- Clear handoff process
-- Complete documentation
-- Immediate support access
-- Production-ready from day one
+### Claude Code (Builder)
+- [ ] Clones repo correctly
+- [ ] Follows EXECUTION_PLAN exactly
+- [ ] Commits every 2-3 tasks
+- [ ] Pushes after every commit
+- [ ] Tests before committing
+- [ ] Creates issues for blockers
+
+### Josh (Coordinator)
+- [ ] Creates two separate Claude windows
+- [ ] Pastes correct files to each
+- [ ] Monitors progress
+- [ ] Follows deployment guidance
+- [ ] Completes client handoff
 
 ---
 
-**This workflow transforms requirements into production-ready applications through systematic AI-assisted development.**
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| Cash can't find transcript | Search Fireflies manually, provide transcript ID |
+| Claude Code won't start | Verify CODE_STARTER_PROMPT was pasted |
+| Claude Code stopped pushing | Ask Claude Code to push current work |
+| Claude Project can't see code | Verify Claude Code pushed to GitHub |
+| Claudes talking directly | STOP - redirect all comms through GitHub |
+| Lost work | `git add . && git commit -m "Save" && git push` |
+| Build failed on Vercel | Check build logs, fix errors, push to trigger redeploy |
+| Webhook not working | Verify endpoint URL and secret in Stripe + Vercel |
